@@ -1,0 +1,346 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DERMA / INSIGHT | Skin Type Prediction</title>
+
+    <!-- Fonts (the page still looks fine with the fallback fonts if these fail to load) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
+    <script src="{{ url_for('static', filename='js/home.js') }}" defer></script>
+
+    <!-- If JavaScript is off, show the detailed skin information instead of hiding it -->
+    <noscript><style>[hidden] { display: revert !important; }</style></noscript>
+</head>
+<body>
+
+    <!-- Rain layer: filled with droplets by home.js when a valid form is submitted -->
+    <div class="rain-layer" id="rain-layer" aria-hidden="true"></div>
+
+    <!-- ============ NAVBAR ============ -->
+    <header class="navbar">
+        <a class="brand" href="#home">DERMA / INSIGHT</a>
+
+        <button class="nav-toggle" id="nav-toggle" type="button"
+                aria-expanded="false" aria-controls="nav-links" aria-label="Open menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <nav class="nav-links" id="nav-links" aria-label="Main">
+            <a href="#home" data-section="home">Home</a>
+            <a href="#explore" data-section="explore">Explore Skin</a>
+            <a href="#analyze" data-section="analyze">Analyze Skin</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- ============ SECTION 1: INTRODUCTION ============ -->
+        <section class="section section-hero" id="home" aria-labelledby="hero-title">
+            <div class="hero-grid">
+                <div class="hero-text">
+                    <h1 id="hero-title" class="hero-title">Your Skin Has a Story.</h1>
+                    <p class="hero-lead">
+                        Understand what your skin is telling you. Explore your skin type, discover its
+                        characteristics, and get a personalized prediction through our AI-powered skin analysis.
+                    </p>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary" href="#explore">Discover Your Skin</a>
+                        <a class="btn btn-ghost" href="#analyze">Start Analysis</a>
+                    </div>
+                </div>
+
+                <!-- Hero visual: pure CSS + inline SVG, no image files needed -->
+                <div class="hero-visual" aria-hidden="true">
+                    <span class="orb orb-1"></span>
+                    <span class="orb orb-2"></span>
+                    <span class="orb orb-3"></span>
+                    <div class="ring ring-outer"></div>
+                    <div class="ring ring-inner"></div>
+
+                    <svg class="face" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="face-fill" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#D3D3FF"/>
+                                <stop offset="0.55" stop-color="#CEB5FF"/>
+                                <stop offset="1" stop-color="#8EC1DE"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M100 10 C150 10 172 52 168 108 C165 150 150 190 128 208 L128 240 L72 240 L72 208
+                                 C50 190 35 150 32 108 C28 52 50 10 100 10 Z" fill="url(#face-fill)" opacity="0.9"/>
+                        <path d="M68 104 Q80 96 92 104 M108 104 Q120 96 132 104" stroke="#1E2147"
+                              stroke-width="3" fill="none" stroke-linecap="round" opacity="0.55"/>
+                        <path d="M88 160 Q100 170 112 160" stroke="#1E2147" stroke-width="3" fill="none"
+                              stroke-linecap="round" opacity="0.45"/>
+                    </svg>
+
+                    <div class="float-card">
+                        <strong>Four skin types</strong>
+                        <span>Oily · Dry · Normal · Combination</span>
+                    </div>
+                    <span class="spark spark-1"></span>
+                    <span class="spark spark-2"></span>
+                    <span class="spark spark-3"></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ SECTION 2: EXPLORE SKIN ============ -->
+        <section class="section section-explore" id="explore" aria-labelledby="explore-title">
+            <div class="container">
+                <h2 id="explore-title" class="section-title">Explore Skin</h2>
+                <p class="section-lead">
+                    Four common skin types. Pick one to see what it generally looks and feels like.
+                    These are educational descriptions, not medical diagnoses.
+                </p>
+
+                <!-- Skin type cards -->
+                <div class="skin-cards" id="skin-cards">
+                    <button class="skin-card" type="button" data-skin="oily" aria-expanded="false" aria-controls="skin-detail">
+                        <span class="skin-icon skin-icon-oily" aria-hidden="true"></span>
+                        <span class="skin-name">Oily</span>
+                        <span class="skin-summary">Skin that tends to produce more sebum, often appearing shiny.</span>
+                        <span class="skin-more">Explore</span>
+                    </button>
+
+                    <button class="skin-card" type="button" data-skin="dry" aria-expanded="false" aria-controls="skin-detail">
+                        <span class="skin-icon skin-icon-dry" aria-hidden="true"></span>
+                        <span class="skin-name">Dry</span>
+                        <span class="skin-summary">Skin that may feel tight, rough, or flaky due to lower moisture.</span>
+                        <span class="skin-more">Explore</span>
+                    </button>
+
+                    <button class="skin-card" type="button" data-skin="normal" aria-expanded="false" aria-controls="skin-detail">
+                        <span class="skin-icon skin-icon-normal" aria-hidden="true"></span>
+                        <span class="skin-name">Normal</span>
+                        <span class="skin-summary">Skin that generally feels balanced, without excessive oiliness or dryness.</span>
+                        <span class="skin-more">Explore</span>
+                    </button>
+
+                    <button class="skin-card" type="button" data-skin="combination" aria-expanded="false" aria-controls="skin-detail">
+                        <span class="skin-icon skin-icon-combination" aria-hidden="true"></span>
+                        <span class="skin-name">Combination</span>
+                        <span class="skin-summary">Skin with different characteristics in different areas, such as an oily T-zone and drier cheeks.</span>
+                        <span class="skin-more">Explore</span>
+                    </button>
+                </div>
+
+                <!-- Detail panel: stays closed until a card is chosen -->
+                <div class="skin-detail" id="skin-detail" data-skin="none" hidden>
+                    <div class="skin-visual-wrap">
+                        <div class="skin-visual" aria-hidden="true">
+                            <span class="layer layer-oily"></span>
+                            <span class="layer layer-dry"></span>
+                            <span class="layer layer-normal"></span>
+                            <span class="layer layer-combination"></span>
+                        </div>
+                        <p class="visual-note">Illustration only. It does not show real measurements.</p>
+                    </div>
+
+                    <div class="skin-detail-text" aria-live="polite">
+                        <article data-detail="oily" hidden>
+                            <h3>Oily skin</h3>
+                            <p><strong>What it means:</strong> Your skin produces more sebum (natural oil) than average.</p>
+                            <p><strong>Common traits:</strong> A shiny look, visible pores, and a tendency to feel greasy.</p>
+                            <p><strong>Through the day:</strong> Skin often looks fine in the morning and shinier by midday.</p>
+                            <p><strong>How it differs:</strong> Unlike dry skin, it rarely feels tight. Unlike combination skin, the oiliness is not limited to the T-zone.</p>
+                        </article>
+                        <article data-detail="dry" hidden>
+                            <h3>Dry skin</h3>
+                            <p><strong>What it means:</strong> Your skin holds less moisture than average.</p>
+                            <p><strong>Common traits:</strong> A tight feeling, rough patches, dullness, or flaking.</p>
+                            <p><strong>Through the day:</strong> Skin may feel tight after washing and more uncomfortable by evening.</p>
+                            <p><strong>How it differs:</strong> Unlike oily skin, it rarely looks shiny. Unlike normal skin, it often needs extra attention to comfort.</p>
+                        </article>
+                        <article data-detail="normal" hidden>
+                            <h3>Normal skin</h3>
+                            <p><strong>What it means:</strong> Your skin is generally well balanced.</p>
+                            <p><strong>Common traits:</strong> Even texture, few blemishes, and little shine or flaking.</p>
+                            <p><strong>Through the day:</strong> Skin feels comfortable from morning to night.</p>
+                            <p><strong>How it differs:</strong> It sits between oily and dry, without the strong tendencies of either.</p>
+                        </article>
+                        <article data-detail="combination" hidden>
+                            <h3>Combination skin</h3>
+                            <p><strong>What it means:</strong> Different areas of your face behave like different skin types.</p>
+                            <p><strong>Common traits:</strong> An oily T-zone (forehead, nose, chin) with normal or drier cheeks.</p>
+                            <p><strong>Through the day:</strong> The center of the face may get shiny while the cheeks stay comfortable or feel tight.</p>
+                            <p><strong>How it differs:</strong> It mixes traits of oily and dry skin instead of showing one throughout.</p>
+                        </article>
+                        <button class="btn btn-ghost btn-small" type="button" id="skin-detail-close">Back to summaries</button>
+                    </div>
+                </div>
+
+                <!-- How does it work -->
+                <div class="how-box">
+                    <h3 class="how-title">How does DERMA / INSIGHT work?</h3>
+                    <p>We use your skin description and/or image to estimate your skin type.</p>
+                    <button class="how-toggle" id="how-toggle" type="button" aria-expanded="false" aria-controls="how-more">
+                        Show details
+                    </button>
+                    <div class="how-more" id="how-more" hidden>
+                        <ul>
+                            <li>The NLP model analyzes the skin description.</li>
+                            <li>The CNN model analyzes the uploaded image.</li>
+                            <li>The available prediction information is processed by the existing application.</li>
+                            <li>The result is displayed on the existing results page.</li>
+                        </ul>
+                        <p class="how-note">DERMA / INSIGHT predicts skin type only. It does not diagnose skin conditions or recommend medical treatment.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============ SECTION 3: ANALYZE YOUR SKIN ============ -->
+        <section class="section section-analyze" id="analyze" aria-labelledby="analyze-title">
+            <div class="container">
+                <h2 id="analyze-title" class="section-title">Analyze Your Skin</h2>
+
+                <div class="analyze-grid">
+
+                    <!-- LEFT: instructions -->
+                    <div class="guide">
+                        <ol class="steps" id="steps">
+                            <li>
+                                <button class="step is-active" type="button" data-step="1" aria-current="step">
+                                    <span class="step-number">01</span>
+                                    <span class="step-body">
+                                        <span class="step-title">Tell us about your skin</span>
+                                        <span class="step-text">Write a few sentences about how it looks and feels during the day.</span>
+                                    </span>
+                                </button>
+                            </li>
+                            <li>
+                                <button class="step" type="button" data-step="2">
+                                    <span class="step-number">02</span>
+                                    <span class="step-body">
+                                        <span class="step-title">Add a clear photo</span>
+                                        <span class="step-text">Use natural light and a bare face for the best reading.</span>
+                                    </span>
+                                </button>
+                            </li>
+                            <li>
+                                <button class="step" type="button" data-step="3">
+                                    <span class="step-number">03</span>
+                                    <span class="step-body">
+                                        <span class="step-title">Get your skin type</span>
+                                        <span class="step-text">We analyze both inputs and show your result on the next page.</span>
+                                    </span>
+                                </button>
+                            </li>
+                        </ol>
+
+                        <div class="progress" aria-hidden="true"><span class="progress-bar" id="progress-bar"></span></div>
+
+                        <div class="tip-card" aria-live="polite">
+                            <span class="tip-icon" id="tip-icon" aria-hidden="true">1</span>
+                            <p id="tip-text">Mention shine, tightness, flaking, or how your skin feels by evening.</p>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: the real Flask form -->
+                    <form class="predict-form" id="predict-form"
+                          action="{{ url_for('predict') }}"
+                          method="POST"
+                          enctype="multipart/form-data"
+                          novalidate>
+
+                        {% if error %}
+                            <p class="error-message" role="alert">{{ error }}</p>
+                        {% endif %}
+
+                        <div class="field">
+                            <label for="skin_description">Describe your skin</label>
+                            <div class="textarea-wrap">
+                                <textarea
+                                    id="skin_description"
+                                    name="skin_description"
+                                    rows="5"
+                                    placeholder="Example: My forehead and nose get shiny by noon, but my cheeks feel a little tight."
+                                ></textarea>
+                                <button class="clear-text" id="clear-text" type="button" hidden>Clear text</button>
+                            </div>
+                            <p class="char-count"><span id="char-count">0</span> characters</p>
+                        </div>
+
+                        <div class="field upload" id="upload">
+                            <span class="field-label">Upload a photo</span>
+
+                            <!-- The real file input. Only visually hidden, so it stays keyboard accessible -->
+                            <input
+                                type="file"
+                                id="skin_image"
+                                name="skin_image"
+                                accept="image/png, image/jpeg, image/webp"
+                                class="visually-hidden"
+                            >
+
+                            <label class="dropzone" id="dropzone" for="skin_image">
+                                <span class="drop-icon" aria-hidden="true"></span>
+                                <span class="drop-title">Drag a photo here, or choose one</span>
+                                <span class="drop-hint">PNG, JPG, or WEBP</span>
+                            </label>
+
+                            <div class="upload-preview" id="upload-preview" hidden>
+                                <img id="preview-image" alt="Preview of the selected photo">
+                                <div class="preview-info">
+                                    <span class="preview-status">Photo selected</span>
+                                    <span class="preview-name" id="preview-name"></span>
+                                    <span class="preview-size" id="preview-size"></span>
+                                    <span class="preview-actions">
+                                        <label class="btn btn-ghost btn-small" for="skin_image">Replace</label>
+                                        <button class="btn btn-ghost btn-small" type="button" id="remove-image">Remove</button>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <p class="upload-error" id="upload-error" role="alert" hidden></p>
+                        </div>
+
+                        <p class="form-hint" id="form-hint" role="alert" hidden></p>
+
+                        <button class="btn btn-primary btn-predict" id="predict-button" type="submit">
+                            <span class="spinner" aria-hidden="true"></span>
+                            <span class="predict-label" id="predict-label">Predict my skin type</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>DERMA / INSIGHT predicts skin type for general information only. It is not a medical diagnosis.</p>
+    </footer>
+
+    <!-- ============ SKIN BUDDY ============ -->
+    <div class="buddy" id="buddy">
+        <div class="buddy-bubble" id="buddy-bubble" role="status" hidden>
+            <p id="buddy-message"></p>
+            <button class="buddy-close" id="buddy-close" type="button" aria-label="Close Skin Buddy message">&times;</button>
+        </div>
+        <button class="buddy-button" id="buddy-button" type="button" aria-label="Skin Buddy: show a tip">
+            <svg viewBox="0 0 80 80" aria-hidden="true">
+                <defs>
+                    <radialGradient id="buddy-fill" cx="0.35" cy="0.3" r="0.8">
+                        <stop offset="0" stop-color="#ffffff"/>
+                        <stop offset="0.45" stop-color="#D3D3FF"/>
+                        <stop offset="1" stop-color="#80A8FF"/>
+                    </radialGradient>
+                </defs>
+                <circle cx="40" cy="40" r="34" fill="url(#buddy-fill)"/>
+                <g class="buddy-eyes">
+                    <ellipse cx="29" cy="37" rx="3.5" ry="5" fill="#1E2147"/>
+                    <ellipse cx="51" cy="37" rx="3.5" ry="5" fill="#1E2147"/>
+                </g>
+                <path d="M32 50 Q40 57 48 50" stroke="#1E2147" stroke-width="3" fill="none" stroke-linecap="round"/>
+            </svg>
+        </button>
+    </div>
+
+</body>
+</html>

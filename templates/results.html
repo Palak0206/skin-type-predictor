@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your Skin Analysis | DERMA / INSIGHT</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
+    <script src="{{ url_for('static', filename='js/results.js') }}" defer></script>
+</head>
+<body>
+{# Real model outputs are exposed to JavaScript through data attributes only. #}
+<div id="results-root"
+     data-nlp="{{ nlp_skin_type if nlp_skin_type is not none else '' }}"
+     data-cnn="{{ cnn_skin_type if cnn_skin_type is not none else '' }}"
+     data-oiliness="{{ feature_intensities.get('Oiliness', '') }}"
+     data-dryness="{{ feature_intensities.get('Dryness', '') }}"
+     data-sensitivity="{{ feature_intensities.get('Sensitivity', '') }}"
+     data-has-text="{{ 'true' if (nlp_skin_type is not none or feature_intensities) else 'false' }}"
+     data-has-image="{{ 'true' if uploaded_image_path else 'false' }}">
+
+<!-- ================= EXPERIENCE A: ANALYSIS SEQUENCE ================= -->
+<section class="analysis" id="analysis" aria-labelledby="analysis-title">
+    <div class="analysis-inner">
+        <div class="orbit" aria-hidden="true">
+            <span class="ring ring-1"></span><span class="ring ring-2"></span><span class="ring ring-3"></span>
+            <span class="dot dot-1"></span><span class="dot dot-2"></span>
+            <svg class="orbit-face" viewBox="0 0 200 260">
+                <ellipse class="face-line" cx="100" cy="130" rx="62" ry="86"/>
+                <path class="face-line" d="M70 112q10-8 20 0M110 112q10-8 20 0M100 118v36q-7 5-14 0M78 176q22 14 44 0"/>
+                <line class="scan-line" x1="30" y1="40" x2="170" y2="40"/>
+            </svg>
+            {% if uploaded_image_path %}
+            <img class="orbit-thumb" src="{{ url_for('static', filename=uploaded_image_path) }}" alt="">
+            {% endif %}
+        </div>
+
+        <div class="analysis-copy">
+            <h1 id="analysis-title">Understanding your skin…</h1>
+            <p>Your skin description and image are being examined to prepare your analysis report.</p>
+            <p class="status-line" role="status" aria-live="polite" id="analysis-status">Thinking…</p>
+
+            <ol class="timeline" id="timeline">
+                <li class="stage" data-stage="inputs"><span class="stage-icon" aria-hidden="true">◐</span>
+                    <div><strong>Preparing inputs</strong><span>Preparing your skin description and image.</span></div>
+                    <em class="stage-state">Waiting</em></li>
+                <li class="stage" data-stage="preprocess"><span class="stage-icon" aria-hidden="true">✎</span>
+                    <div><strong>Text preprocessing</strong><span>Cleaning and preparing the text for analysis.</span></div>
+                    <em class="stage-state">Waiting</em></li>
+                <li class="stage" data-stage="nlp"><span class="stage-icon" aria-hidden="true">◈</span>
+                    <div><strong>NLP analysis</strong><span>Analyzing the characteristics described in your skin description.</span></div>
+                    <em class="stage-state">Waiting</em></li>
+                <li class="stage" data-stage="image"><span class="stage-icon" aria-hidden="true">◉</span>
+                    <div><strong>Image analysis</strong><span>Examining the uploaded image using the image model.</span></div>
+                    <em class="stage-state">Waiting</em></li>
+                <li class="stage" data-stage="report"><span class="stage-icon" aria-hidden="true">✦</span>
+                    <div><strong>Preparing your report</strong><span>Organizing the prediction results.</span></div>
+                    <em class="stage-state">Waiting</em></li>
+            </ol>
+
+            <button type="button" class="btn-ghost" id="skip-animation">Skip animation</button>
+            <p class="fine-print">A visual walkthrough of the analysis stages. Your predictions were already complete when this page loaded.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================= EXPERIENCE B: RESULTS REPORT ================= -->
+<main class="report" id="report">
+    <header class="report-head">
+        <h1 id="report-title" tabindex="-1">Your Skin Analysis</h1>
+        <p>Here's what your skin description and image suggest.</p>
+    </header>
+
+    <!-- Centerpiece: illustrative face -->
+    <section class="hero" aria-labelledby="hero-title">
+        <figure class="skin-visual" id="skin-visual" data-skin="none">
+            <svg viewBox="0 0 200 260" role="img" aria-labelledby="face-desc" class="face-svg">
+                <title id="face-desc">Illustrative face reflecting the predicted skin type</title>
+                <defs>
+                    <radialGradient id="skinGrad" cx="50%" cy="40%" r="65%">
+                        <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#D3D3FF"/>
+                    </radialGradient>
+                </defs>
+                <ellipse class="balance-ring" cx="100" cy="130" rx="84" ry="109"/>
+                <ellipse class="face-base" cx="100" cy="130" rx="70" ry="95" fill="url(#skinGrad)"/>
+                <path class="zone zone-t" d="M84 52q16-12 32 0v52q6 14 4 38q2 18-4 30-16 8-32 0-6-12-4-30-2-24 4-38z"/>
+                <ellipse class="zone zone-c" cx="62" cy="150" rx="19" ry="26"/>
+                <ellipse class="zone zone-c" cx="138" cy="150" rx="19" ry="26"/>
+                <g class="shine shine-t"><ellipse cx="100" cy="68" rx="9" ry="4"/><ellipse cx="100" cy="128" rx="4" ry="12"/><ellipse cx="94" cy="150" rx="3" ry="4"/></g>
+                <g class="shine shine-c"><ellipse cx="62" cy="146" rx="6" ry="3"/><ellipse cx="138" cy="146" rx="6" ry="3"/><ellipse cx="100" cy="196" rx="8" ry="3"/></g>
+                <g class="flakes">
+                    <circle cx="55" cy="140" r="1.6"/><circle cx="68" cy="156" r="1.3"/><circle cx="60" cy="166" r="1.8"/><circle cx="72" cy="142" r="1.2"/>
+                    <circle cx="145" cy="140" r="1.6"/><circle cx="132" cy="156" r="1.3"/><circle cx="140" cy="166" r="1.8"/><circle cx="128" cy="142" r="1.2"/>
+                    <path d="M52 152l5 2M143 152l5 2M64 172l5-2M131 172l5-2"/>
+                </g>
+                <g class="features">
+                    <path d="M66 100q12-7 24 0M110 100q12-7 24 0"/><circle cx="78" cy="112" r="2.5"/><circle cx="122" cy="112" r="2.5"/>
+                    <path d="M100 118v32q-6 5-12 1M80 186q20 12 40 0"/>
+                </g>
+            </svg>
+            <figcaption id="hero-title">
+                <span class="hero-source" id="hero-source">Image model (CNN)</span>
+                <strong class="hero-type" id="hero-type">
+                    {% if cnn_skin_type is not none %}{{ cnn_skin_type }}{% elif nlp_skin_type is not none %}{{ nlp_skin_type }}{% else %}No prediction{% endif %}
+                </strong>
+                <span class="hero-blurb" id="hero-blurb"></span>
+            </figcaption>
+        </figure>
+        <p class="disclaimer">This face is a conceptual illustration of the predicted skin type. It is not a map of your face, and the model does not detect specific regions.</p>
+    </section>
+
+    <!-- Predictions by model -->
+    <section class="predictions" aria-label="Predictions by model">
+        <article class="pred pred-nlp">
+            <h2>Text-based skin type</h2>
+            <p class="pred-model">NLP Model 01</p>
+            <p class="pred-value">
+                {% if nlp_skin_type is not none %}{{ nlp_skin_type }}{% else %}No text prediction{% endif %}
+            </p>
+        </article>
+
+        <article class="pred pred-cnn">
+            <h2>Image-based skin type</h2>
+            <p class="pred-model">CNN image model</p>
+            <p class="pred-value">
+                {% if cnn_skin_type is not none %}{{ cnn_skin_type }}{% else %}No image prediction{% endif %}
+            </p>
+        </article>
+
+        <article class="pred pred-image">
+            <h2>Image submitted for analysis</h2>
+            {% if uploaded_image_path %}
+            <button type="button" class="thumb-btn" id="open-image" aria-label="Expand uploaded image">
+                <img src="{{ url_for('static', filename=uploaded_image_path) }}" alt="Uploaded skin image" width="250">
+            </button>
+            {% else %}
+            <p class="empty">No image was uploaded. Add one next time to get an image-based prediction.</p>
+            {% endif %}
+        </article>
+    </section>
+
+    <p class="agreement" id="agreement" hidden></p>
+
+    <!-- Intensity meters -->
+    <section class="intensity" aria-labelledby="intensity-title">
+        <h2 id="intensity-title">Skin characteristics from your description</h2>
+        <p class="sub">NLP Model 02 predicts each characteristic separately, so it can differ from the overall skin type.</p>
+        {% if feature_intensities %}
+        <div class="meters">
+            {% for name, blurb in [
+                ('Oiliness', 'How much shine or excess oil your description suggests.'),
+                ('Dryness', 'How much tightness or flaking your description suggests.'),
+                ('Sensitivity', 'How easily your description suggests your skin reacts or feels irritated.')
+            ] %}
+            <div class="meter" data-level="" data-value="{{ feature_intensities.get(name, '') }}">
+                <div class="meter-top">
+                    <h3>{{ name }}</h3>
+                    <span class="meter-value">{{ feature_intensities.get(name, 'N/A') }}</span>
+                </div>
+                <div class="meter-track" aria-hidden="true">
+                    <span class="meter-fill"></span>
+                    <span class="seg">Low</span><span class="seg">Medium</span><span class="seg">High</span>
+                </div>
+                <p>{{ blurb }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="empty">No text description was submitted, so no characteristics were predicted.</p>
+        {% endif %}
+    </section>
+
+    <details class="interpret">
+        <summary>How should I interpret these results?</summary>
+        <ul>
+            <li>The NLP model reads your written description to predict an overall skin type.</li>
+            <li>The CNN classifies the uploaded image into a skin type.</li>
+            <li>The intensity model rates oiliness, dryness and sensitivity as Low, Medium or High.</li>
+            <li>These are model predictions, not medical diagnoses.</li>
+            <li>The models work independently and may disagree.</li>
+        </ul>
+    </details>
+
+    <a class="btn-primary" href="/">Analyze again</a>
+</main>
+
+{% if uploaded_image_path %}
+<dialog id="image-dialog" aria-label="Uploaded image">
+    <img src="{{ url_for('static', filename=uploaded_image_path) }}" alt="Uploaded skin image, enlarged">
+    <button type="button" class="btn-ghost" id="close-image">Close</button>
+</dialog>
+{% endif %}
+
+</div>
+</body>
+</html>
