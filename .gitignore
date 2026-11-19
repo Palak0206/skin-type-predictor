@@ -1,0 +1,53 @@
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+virtual/
+venv/
+env/
+.venv/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE settings
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Flask
+instance/
+.webassets-cache/
+
+# Uploaded images and generated files
+uploads/*
+!uploads/.gitkeep
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Model training outputs
+logs/
+checkpoints/
+runs/

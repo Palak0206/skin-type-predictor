@@ -1,4 +1,3 @@
-
 import os
 import joblib
 import numpy as np
@@ -14,6 +13,7 @@ from preprocessing import (
     stopword_removal,
     lemmatization
 )
+from cosine import ProductRecommender
 
 
 app = Flask(__name__)
@@ -32,10 +32,9 @@ UPLOAD_FOLDER = os.path.join(
 )
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-IMAGE_SIZE = (128,128)
+IMAGE_SIZE = (128, 128)
 
 ALLOWED_EXTENSIONS = {
     "png",
@@ -43,6 +42,33 @@ ALLOWED_EXTENSIONS = {
     "jpeg",
     "webp"
 }
+
+
+# --------------------------------
+# Product recommendation dataset
+# --------------------------------
+
+PRODUCT_DATASET_PATH = os.path.join(
+    BASE_DIR,
+    "datasets",
+    "product-recomendation.xlsx"
+)
+
+# Load and fit the recommendation encoder only once when Flask starts.
+# If the workbook is missing or invalid, skin predictions will still work.
+product_recommender = None
+
+try:
+    product_recommender = ProductRecommender(
+        dataset_path=PRODUCT_DATASET_PATH
+    )
+    app.logger.info("Product recommendation dataset loaded successfully.")
+
+except Exception as exc:
+    app.logger.exception(
+        "Product recommendations are unavailable: %s",
+        exc
+    )
 
 
 # --------------------------------
@@ -54,7 +80,6 @@ MODEL_DIR = os.path.join(
     "models"
 )
 
-# Change "texts" to "text" if that is your actual folder name
 NLP_DIR = os.path.join(
     MODEL_DIR,
     "text"
@@ -99,10 +124,7 @@ cnn_model = load_model(
 
 @app.route("/")
 def home():
-
-    return render_template(
-        "home.html"
-    )
+    return render_template("home.html")
 
 
 @app.route("/predict", methods=["POST"])
@@ -117,9 +139,7 @@ def predict():
         ""
     ).strip()
 
-    image_file = request.files.get(
-        "skin_image"
-    )
+    image_file = request.files.get("skin_image")
 
     has_image = (
         image_file is not None
@@ -132,7 +152,6 @@ def predict():
     # --------------------------------
 
     if not skin_description and not has_image:
-
         return render_template(
             "home.html",
             error="Please enter a skin description or upload an image."
@@ -146,7 +165,6 @@ def predict():
     nlp_skin_type = None
 
     if skin_description:
-
         nlp_skin_type = skin_type_model.predict(
             [skin_description]
         )[0]
@@ -159,14 +177,11 @@ def predict():
     feature_intensities = {}
 
     if skin_description:
-
         intensity_prediction = feature_intensity_model.predict(
             [skin_description]
         )
 
-        prediction = np.asarray(
-            intensity_prediction
-        )[0]
+        prediction = np.asarray(intensity_prediction)[0]
 
         feature_names = [
             "Oiliness",
@@ -174,12 +189,8 @@ def predict():
             "Sensitivity"
         ]
 
-        for name, value in zip(
-            feature_names,
-            prediction
-        ):
-
-            feature_intensities[name] = value
+        for name, value in zip(feature_names, prediction):
+            feature_intensities[name] = str(value)
 
 
     # --------------------------------
@@ -192,12 +203,9 @@ def predict():
     if has_image:
 
         # Secure the uploaded filename
-        filename = secure_filename(
-            image_file.filename
-        )
+        filename = secure_filename(image_file.filename)
 
         if not filename:
-
             return render_template(
                 "home.html",
                 error="Please upload a valid image filename."
@@ -205,13 +213,9 @@ def predict():
 
 
         # Check image extension
-        extension = filename.rsplit(
-            ".",
-            1
-        )[-1].lower()
+        extension = filename.rsplit(".", 1)[-1].lower()
 
         if extension not in ALLOWED_EXTENSIONS:
-
             return render_template(
                 "home.html",
                 error="Please upload a PNG, JPG, JPEG, or WEBP image."
@@ -224,9 +228,7 @@ def predict():
             filename
         )
 
-        image_file.save(
-            full_image_path
-        )
+        image_file.save(full_image_path)
 
 
         # Store path relative to the static folder
@@ -237,92 +239,110 @@ def predict():
 
 
         # Load and preprocess image
-        image = Image.open(
-            full_image_path
-        ).convert("RGB")
-
-        image = image.resize(
-            IMAGE_SIZE
-        )
+        image = Image.open(full_image_path).convert("RGB")
+        image = image.resize(IMAGE_SIZE)
 
         image_array = np.array(
             image,
             dtype=np.float32
         )
 
-
-        # Normalize pixel values
-        # Assumes CNN was trained using pixel values in range 0-1
+        # Normalize pixel values (CNN trained with values in range 0-1)
         image_array = image_array / 255.0
 
-
         # Add batch dimension
-        image_array = np.expand_dims(
-            image_array,
-            axis=0
-        )
+        image_array = np.expand_dims(image_array, axis=0)
 
 
-        # --------------------------------
-        # CNN Prediction
-        # --------------------------------
-
+        # CNN prediction
         cnn_prediction = cnn_model.predict(
             image_array,
             verbose=0
         )
 
+        print("CNN output shape:", cnn_prediction.shape)
+        print("CNN raw prediction:", cnn_prediction)
 
-        # Debug output in Flask terminal
-        print(
-            "CNN output shape:",
-            cnn_prediction.shape
-        )
-
-        print(
-            "CNN raw prediction:",
-            cnn_prediction
-        )
-
-
-        # Get predicted class index
         predicted_class_index = int(
-            np.argmax(
-                cnn_prediction,
-                axis=1
-            )[0]
+            np.argmax(cnn_prediction, axis=1)[0]
         )
 
-        print(
-            "Predicted class index:",
-            predicted_class_index
-        )
+        print("Predicted class index:", predicted_class_index)
 
-
-        # IMPORTANT:
-        # These must match the class order used during CNN training
+        # This order must match the class order used during CNN training.
         class_names = [
             "Oily",
             "Normal",
             "Combination",
             "Dry"
-]
+        ]
 
-        # Check index BEFORE accessing the list
         if predicted_class_index >= len(class_names):
-
             raise ValueError(
                 f"CNN predicted class index {predicted_class_index}, "
                 f"but class_names only has {len(class_names)} classes. "
                 f"CNN output shape: {cnn_prediction.shape}"
-                f"The indices are : {train_generator.class_indices}"
             )
 
+        cnn_skin_type = class_names[predicted_class_index]
 
-        # Get predicted skin type
-        cnn_skin_type = class_names[
-            predicted_class_index
-        ]
+
+    # --------------------------------
+    # Product recommendations
+    # --------------------------------
+
+    recommendations = {}
+    recommendation_skin_type = None
+    recommendation_intensities = {}
+    defaulted_intensities = []
+    recommendation_error = None
+
+    # Prefer the image prediction when available; otherwise use the NLP result.
+    recommendation_skin_type = (
+        cnn_skin_type if cnn_skin_type is not None else nlp_skin_type
+    )
+
+    if recommendation_skin_type is not None and product_recommender is not None:
+
+        # NLP Model 2 outputs these feature names. If a feature is unavailable
+        # (for example, image-only input), Medium is a neutral system default.
+        intensity_mapping = {
+            "Oily": "Oiliness",
+            "Dry": "Dryness",
+            "Sensitive": "Sensitivity"
+        }
+
+        for product_feature, model_feature in intensity_mapping.items():
+            value = feature_intensities.get(model_feature)
+
+            if value not in {"Low", "Medium", "High"}:
+                value = "Medium"
+                defaulted_intensities.append(model_feature)
+
+            recommendation_intensities[product_feature] = value
+
+        try:
+            recommendations = product_recommender.recommend_by_category(
+                skin_type=recommendation_skin_type,
+                oily=recommendation_intensities["Oily"],
+                dry=recommendation_intensities["Dry"],
+                sensitive=recommendation_intensities["Sensitive"],
+                top_n=3
+            )
+
+        except Exception as exc:
+            app.logger.exception(
+                "Could not generate product recommendations: %s",
+                exc
+            )
+            recommendation_error = (
+                "Product recommendations could not be generated for this result."
+            )
+
+    elif recommendation_skin_type is not None and product_recommender is None:
+        recommendation_error = (
+            "The product recommendation dataset is currently unavailable."
+        )
 
 
     # --------------------------------
@@ -334,7 +354,12 @@ def predict():
         nlp_skin_type=nlp_skin_type,
         feature_intensities=feature_intensities,
         cnn_skin_type=cnn_skin_type,
-        uploaded_image_path=uploaded_image_path
+        uploaded_image_path=uploaded_image_path,
+        recommendations=recommendations,
+        recommendation_skin_type=recommendation_skin_type,
+        recommendation_intensities=recommendation_intensities,
+        defaulted_intensities=defaulted_intensities,
+        recommendation_error=recommendation_error
     )
 
 
@@ -343,7 +368,8 @@ def predict():
 # --------------------------------
 
 if __name__ == "__main__":
+    print("\n========== REGISTERED ROUTES ==========")
+    print(app.url_map)
+    print("========================================\n")
 
-    app.run(
-        debug=True
-    )
+    app.run(debug=True)

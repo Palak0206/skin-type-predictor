@@ -62,30 +62,12 @@
                     <span class="orb orb-3"></span>
                     <div class="ring ring-outer"></div>
                     <div class="ring ring-inner"></div>
-
-                    <svg class="face" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
-                        <defs>
-                            <linearGradient id="face-fill" x1="0" y1="0" x2="1" y2="1">
-                                <stop offset="0" stop-color="#D3D3FF"/>
-                                <stop offset="0.55" stop-color="#CEB5FF"/>
-                                <stop offset="1" stop-color="#8EC1DE"/>
-                            </linearGradient>
-                        </defs>
-                        <path d="M100 10 C150 10 172 52 168 108 C165 150 150 190 128 208 L128 240 L72 240 L72 208
-                                 C50 190 35 150 32 108 C28 52 50 10 100 10 Z" fill="url(#face-fill)" opacity="0.9"/>
-                        <path d="M68 104 Q80 96 92 104 M108 104 Q120 96 132 104" stroke="#1E2147"
-                              stroke-width="3" fill="none" stroke-linecap="round" opacity="0.55"/>
-                        <path d="M88 160 Q100 170 112 160" stroke="#1E2147" stroke-width="3" fill="none"
-                              stroke-linecap="round" opacity="0.45"/>
-                    </svg>
-
-                    <div class="float-card">
-                        <strong>Four skin types</strong>
-                        <span>Oily · Dry · Normal · Combination</span>
+                    <div class="face">
+                    <img src="{{ url_for('static', filename='images/home-visual-2.png') }}" alt="Skin analysis visual">
                     </div>
                     <span class="spark spark-1"></span>
                     <span class="spark spark-2"></span>
-                    <span class="spark spark-3"></span>
+                    <span class="spark spark-3"></span> 
                 </div>
             </div>
         </section>

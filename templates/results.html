@@ -180,6 +180,121 @@
         </ul>
     </details>
 
+<!-- PRODUCT RECOMMENDATIONS -->
+<section class="recommendations" id="recommendations">
+
+    <div class="recommendations-heading">
+        <p class="section-eyebrow">PERSONALISED PRODUCT MATCHES</p>
+        <h2>Your Recommended Skincare</h2>
+        <p>Products matched to your predicted skin profile.</p>
+    </div>
+
+    {% if recommendation_skin_type %}
+    <div class="recommendation-profile">
+        <strong>Skin type:</strong> {{ recommendation_skin_type }}
+
+        <span>
+            Oiliness: {{ recommendation_intensities["Oily"] }}
+        </span>
+
+        <span>
+            Dryness: {{ recommendation_intensities["Dry"] }}
+        </span>
+
+        <span>
+            Sensitivity: {{ recommendation_intensities["Sensitive"] }}
+        </span>
+    </div>
+    {% endif %}
+
+    {% if defaulted_intensities %}
+    <p class="recommendation-note">
+        Medium was used as the default for:
+        {{ defaulted_intensities | join(", ") }}.
+        These are system defaults, not model predictions.
+    </p>
+    {% endif %}
+
+    {% if recommendation_error %}
+
+        <p class="empty">{{ recommendation_error }}</p>
+
+    {% else %}
+
+        {% set categories = [
+            ('moisturizer', 'Moisturizer'),
+            ('facewash', 'Facewash'),
+            ('sunscreen', 'Sunscreen'),
+            ('serum', 'Serum'),
+            ('toner', 'Toner'),
+            ('treatment', 'Treatment')
+        ] %}
+
+        {% for key, label in categories %}
+
+        <section class="recommendation-category">
+
+            <h3>{{ label }}</h3>
+
+            <div class="product-grid">
+
+                {% for product in recommendations.get(key, []) %}
+
+                <article class="product-card">
+
+                    <p class="product-brand">
+                        {{ product["Brand"] }}
+                    </p>
+
+                    <h4>{{ product["Name"] }}</h4>
+
+                    <p>
+                        Price: {{ "%.2f" | format(product["Price"]) }}
+                    </p>
+
+                    <p>
+                        Similarity:
+                        {{ "%.3f" | format(product["Similarity Score"]) }}
+                    </p>
+
+                    <details>
+                        <summary>Product details</summary>
+
+                        <p>Skin type: {{ product["Skin Type"] }}</p>
+                        <p>Oiliness: {{ product["Oily"] }}</p>
+                        <p>Dryness: {{ product["Dry"] }}</p>
+                        <p>Sensitivity: {{ product["Sensitive"] }}</p>
+                        <p>Composition: {{ product["Composition"] }}</p>
+                    </details>
+
+                    {% if product["Link"] %}
+                    <a href="{{ product['Link'] }}"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                        Search product
+                    </a>
+                    {% endif %}
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+        {% endfor %}
+
+    {% endif %}
+
+    <p class="recommendation-disclaimer">
+        Recommendations are generated using an illustrative demo dataset.
+        Similarity scores indicate profile similarity, not product effectiveness.
+    </p>
+
+</section>
+
+
     <a class="btn-primary" href="/">Analyze again</a>
 </main>
 
